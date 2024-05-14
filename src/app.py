@@ -388,7 +388,7 @@ app.layout = html.Div(style={'backgroundColor': '#FFFFFF'}, children=[
         html.Label("Genes enriched in cell types: ", htmlFor="enriched_celltype", style={'margin-top': '30px'}),
         dcc.Checklist(id='enriched_celltype',
                         options=['GBC', 'INP', 'early iOSN', 'late iOSN', 'mOSN'],
-                        value=['GBC'], 
+                        value=[], 
                         style={'margin-bottom': '10px','margin-top': '10px', 'display': 'block'})
         ], 
         style={'width': '25%', 
@@ -414,7 +414,7 @@ app.layout = html.Div(style={'backgroundColor': '#FFFFFF'}, children=[
             dcc.Dropdown(id='que_genes_dropdown',
                            options=que_genes_dropdown_options,
                            value=[],
-                        #    value=['Hmgb2', 'Tubb5', 'Gap43','Rtp1'], 
+                           value=['Hmgb2', 'Tubb5', 'Gap43','Rtp1'], 
                            multi=True)
             ],style={'width': '30%', 
                     'float': 'center', 
@@ -431,7 +431,7 @@ app.layout = html.Div(style={'backgroundColor': '#FFFFFF'}, children=[
     
     html.Div([
         html.H5("For source code visit ", style={'display': 'inline-block'}),
-        html.A("geLine github", href="https://github.com/Justice-Lu/geLine")
+        html.A("geLine github", href="https://github.com/Justice-Lu/geLine_dash")
     ], style={"display": "inline-block", "align-items": "center", 
               "margin-left": "50px", 'background-color': 'white', 'font-size': '16px'})
 ])
