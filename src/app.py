@@ -388,8 +388,8 @@ app.layout = html.Div(children=[
                                              'padding': '0px 0px 10px 10px'}),
             dcc.Dropdown(id='que_genes_dropdown',
                            options=que_genes_dropdown_options,
-                           value=[],
-                        #    value=['Hmgb2', 'Tubb5', 'Gap43','Rtp1'], 
+                        #    value=[],
+                           value=['Hmgb2', 'Tubb5', 'Gap43','Rtp1'], 
                            multi=True),
             
             html.Div([
