@@ -162,9 +162,12 @@ def find_enriched_genes(ge_data, query_dpt, n_enriched_genes = 10):
     sorted_indices = np.argsort(mean_diff[filtered_column_indices])[::-1]
     filtered_column_names = dataframe.columns[filtered_column_indices[sorted_indices]].tolist()
 
+
+    # print('DEBUG 1: ', query_dpt)
+    # print('DEBUG 2: ', filtered_column_names[0:n_enriched_genes])
     return filtered_column_names[0:n_enriched_genes] if n_enriched_genes > 0 else []
 
-def expression_plot(subject_gene, query_genes, n_top_genes, n_bot_genes, enriched_celltype, ge_data):
+def expression_plot(subject_gene, query_genes, n_top_genes, n_bot_genes, enriched_celltype, n_enriched_genes,ge_data):
     """
     Generate the plot for gene expression trajectory.
     """
@@ -242,17 +245,17 @@ def expression_plot(subject_gene, query_genes, n_top_genes, n_bot_genes, enriche
                 traces.append(trace)
     
     # Plot top 10 genes enriched in defined celltype combination
-    if np.any([_celltype in ['GBC', 'INP', 'iOSN', 'mOSN'] for _celltype in enriched_celltype]): 
+    if np.any([_celltype in ['GBC', 'INP', 'early iOSN', 'late iOSN', 'mOSN'] for _celltype in enriched_celltype]): 
         cell_type_dpt = {'GBC': ['0-0.3'],
                          'INP': ['0.3-0.6'], 
                          'early iOSN': ['0.6-0.7', '0.7-0.8'], 
                          'late iOSN': ['0.8-0.9', '0.9-0.95'],
                          'mOSN': ['0.95-1']}
         query_dpt = [item for sublist in [cell_type_dpt[_celltype] for _celltype in enriched_celltype] for item in sublist]
-        genes = find_enriched_genes(ge_data, query_dpt)
-        # print('DEBUG 2: ', genes)
+        genes = find_enriched_genes(ge_data, query_dpt, n_enriched_genes)
+        # print('DEBUG 2: ', query_dpt)
         if genes: 
-            if rmse_data is not None: 
+            if (rmse_data is not None) & (colorscale is None): 
                 rmse_data = rmse_data[rmse_data.index.isin(genes)]
                 colorscale = continuous_colors(list(np.round(np.linspace(min(rmse_data),
                                                                         max(rmse_data),
@@ -352,89 +355,100 @@ sub_gene_dropdown_options = genes
 que_genes_dropdown_options = genes
 
 # Define app layout
-app.layout = html.Div(style={'backgroundColor': '#FFFFFF'}, children=[
+app.layout = html.Div(children=[
     html.Div([
-        html.H1("Gene Expression trajectory in Olfactory Sensory Neurons"),
-        html.H5("Here you can input your gene of reference in Subject gene, additional query genes can be added to display trajectory difference and root mean square error as color saturation.", 
-                style={"margin-left": "30px", 'font-size': '16px'})
+        html.H1("Gene Expression trajectory in Olfactory Sensory Neurons")
     ], style={"display": "inline-block", "align-items": "center", 
               "margin-left": "50px", 'background-color': 'white', 'font-size': '16px'}),
     
-    
-    html.Div([
-        html.Label("Plot type: ", htmlFor="plot-type"),
-        dcc.Checklist(id='plot-type',
-                            options=[{'label': 'Logmaritize counts', 'value': 'logmaritize'},
-                                     {'label': 'Normalize maximum expression', 'value': 'norm'}],
-                            value=['norm'], 
-                            style={'margin-bottom': '50px'}),
-        
-        html.Label("Most associated genes: ", htmlFor="top_associated_genes"),
-        html.Div([dcc.RangeSlider(0,
-                    30,
-                    step=1,
-                    id='top_associated_genes',
-                    value=[0,0],
-                    marks={str(num_gene): str(num_gene) for num_gene in range(0,31,10)}), 
-        html.Label("Least associated genes: ", htmlFor="bottom_associated_genes"),
-        dcc.RangeSlider(0,
-                    30,
-                    step=1,
-                    id='bottom_associated_genes',
-                    value=[0,0],
-                    marks={str(num_gene): str(num_gene) for num_gene in range(0,31,10)})
-        ], style={'margin-bottom': '50px'}),
-        
-        html.Label("Genes enriched in cell types: ", htmlFor="enriched_celltype", style={'margin-top': '30px'}),
-        dcc.Checklist(id='enriched_celltype',
-                        options=['GBC', 'INP', 'early iOSN', 'late iOSN', 'mOSN'],
-                        value=[], 
-                        style={'margin-bottom': '10px','margin-top': '10px', 'display': 'block'})
-        ], 
-        style={'width': '25%', 
-                'float': 'right', 
-                # 'display': 'inline-block',
-                'backgroundColor': '#FFFFFF', 
-                'padding': '0px 0px 0px 0px'}),
-    
+    # Control panel 
     html.Div([
         html.Div([
-            html.Label('Subject gene', style={'font-weight': 'bold', "text-align": "center"}),
+            html.Label("Plot type: ", htmlFor="plot-type", 
+                   style={'font-weight': 'bold', 'margin-bottom': '20px'}),
+            dcc.Checklist(id='plot-type',
+                                options=[{'label': 'Logmaritize counts', 'value': 'logmaritize'},
+                                        {'label': 'Normalize maximum expression', 'value': 'norm'}],
+                                value=['norm'])
+        ], style={'margin-bottom': '30px'
+                #   'border': '2px grey solid'
+                  }),
+
+        html.Div([
+            html.Label("Input gene: ", style={'font-weight': 'bold', 'margin-bottom': '20px'}),
+            html.Label('Subject gene', style={"text-align": "center", 
+                                              'display': 'block', 
+                                              'padding': '0px 0px 10px 10px'}),
             dcc.Dropdown(id='sub_gene_dropdown',
                            options=sub_gene_dropdown_options,
                            value='Omp',
                            multi=False),
-            ],style={'width': '10%', 
-                    'float': 'left', 
-                    'display': 'inline-block', 
-                    'padding': '10px 0px 10px 50px',
-                    'backgroundColor': '#FFFFFF'}),
-        html.Div([
-            html.Label('Query genes', style={'font-weight': 'bold', "text-align": "center"}),
+            html.Label('Query genes', style={"text-align": "center", 
+                                             'display': 'block', 
+                                             'padding': '0px 0px 10px 10px'}),
             dcc.Dropdown(id='que_genes_dropdown',
                            options=que_genes_dropdown_options,
                            value=[],
-                           value=['Hmgb2', 'Tubb5', 'Gap43','Rtp1'], 
-                           multi=True)
-            ],style={'width': '30%', 
-                    'float': 'center', 
-                    'display': 'inline-block', 
-                    'padding': '10px 0px 10px 50px',
-                    'backgroundColor': '#FFFFFF'}),
+                        #    value=['Hmgb2', 'Tubb5', 'Gap43','Rtp1'], 
+                           multi=True),
+            
+            html.Div([
+                html.Label("Most associated genes: ", htmlFor="top_associated_genes"),
+                dcc.RangeSlider(0,30,
+                                step=1,
+                                id='top_associated_genes',
+                                value=[0,0],
+                                marks={str(num_gene): str(num_gene) for num_gene in range(0,31,10)}), 
+                html.Label("Least associated genes: ", htmlFor="bottom_associated_genes", 
+                                 style={'margin-bottom': '20px'}),
+                dcc.RangeSlider(0,30,
+                                step=1,
+                                id='bottom_associated_genes',
+                                value=[0,0],
+                                marks={str(num_gene): str(num_gene) for num_gene in range(0,31,10)})
+                        ])
+            ], style={'margin-bottom': '30px'
+                    #   'border': '2px grey solid'
+                    }),
+        
         html.Div([
-            dcc.Graph(id='expression_plot', config={'displayModeBar': False})
-        ],
-             style={'width': '75%', 
-                    'float': 'left', 
-                    'display': 'inline-block'}),
-        ]),
+            html.Label("Genes enriched in cell types: ", htmlFor="enriched_celltype", 
+                    style={'font-weight': 'bold', 'margin-top': '30px'}),
+            dcc.Checklist(id='enriched_celltype',
+                            options=['GBC', 'INP', 'early iOSN', 'late iOSN', 'mOSN'],
+                            value=[]),
+            html.Label("Number of genes: ", htmlFor="enriched_celltype", 
+                    style={'margin-top': '20px', 'margin-bottom': '20px'}),
+            dcc.Slider(0,
+                        30,
+                        step=1,
+                        id='n_enriched_genes',
+                        value=10,
+                        marks={str(num_gene): str(num_gene) for num_gene in range(0,31,10)})
+        ], style={'margin-bottom': '30px'
+                #   'border': '2px grey solid'
+                  })
+    ], style={'width': '25%', 
+              'float': 'right', 
+              'backgroundColor': '#FFFFFF'}),
+    
+    # Expression plot 
+    html.Div([
+        dcc.Graph(id='expression_plot', config={'displayModeBar': False})
+    ],
+            style={'width': '75%', 
+                'float': 'left', 
+                'display': 'block'}),
     
     html.Div([
+        html.P("Discover gene expression patterns in Olfactory Sensory Neurons using our interactive tool. Choose a subject gene as your reference point, then explore gene trajectories in real-time. Highlight genes enriched in specific cell types and adjust the top and bottom associated genes to refine your analysis. Explore with uncover the dynamics of gene expression in OSNs developemnet.", 
+                style={"margin": "50px 30px 30px 10px", 'font-size': '16px'}),
         html.H5("For source code visit ", style={'display': 'inline-block'}),
         html.A("geLine github", href="https://github.com/Justice-Lu/geLine_dash")
-    ], style={"display": "inline-block", "align-items": "center", 
-              "margin-left": "50px", 'background-color': 'white', 'font-size': '16px'})
-])
+    ], style={"display": "inline-block", "float": 'left', 
+              'background-color': 'white', 'font-size': '16px', 
+              'width': '75%'})
+], style={'backgroundColor': '#FFFFFF'} )
 
 # Callback to update dropdown options and graph
 @app.callback(
@@ -444,15 +458,16 @@ app.layout = html.Div(style={'backgroundColor': '#FFFFFF'}, children=[
     Input('plot-type', 'value'),
     Input('top_associated_genes', 'value'),
     Input('bottom_associated_genes', 'value'), 
-    Input('enriched_celltype', 'value')
+    Input('enriched_celltype', 'value'), 
+    Input('n_enriched_genes', 'value')
 )
-def update_expression_plot(subject_gene, query_genes, plot_type, n_top_genes, n_bot_genes, enriched_celltype):
+def update_expression_plot(subject_gene, query_genes, plot_type, n_top_genes, n_bot_genes, enriched_celltype, n_enriched_genes):
     selected_dataset = 'ge_log1p' if 'logmaritize' in plot_type else 'ge_normalized'
     selected_dataset += '_normExp' if 'norm' in plot_type else '_'
 
     # print("DEBUG: ", enriched_celltype) 
     
-    return expression_plot(subject_gene, query_genes, n_top_genes, n_bot_genes, enriched_celltype, ge_data_list[selected_dataset])
+    return expression_plot(subject_gene, query_genes, n_top_genes, n_bot_genes, enriched_celltype, n_enriched_genes, ge_data_list[selected_dataset])
 
 if __name__ == '__main__':
     app.run_server(debug=True)
