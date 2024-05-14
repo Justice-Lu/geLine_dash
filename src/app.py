@@ -436,7 +436,7 @@ app.layout = html.Div(children=[
     html.Div([
         dcc.Graph(id='expression_plot', config={'displayModeBar': False})
     ],
-            style={'width': '75%', 
+            style={'width': '75%', 'height': '80%', 
                 'float': 'left', 
                 'display': 'block'}),
     
