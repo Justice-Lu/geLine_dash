@@ -344,6 +344,7 @@ def expression_plot(subject_gene, query_genes, n_top_genes, n_bot_genes, enriche
 
 # Define Dash app
 app = Dash(__name__, suppress_callback_exceptions=True)
+server = app.server 
 
 # Define dropdown options placeholders
 genes = [{'label': gene, 'value': gene} for gene in ge_data_list[list(ge_data_list.keys())[0]]['gene'].unique()]
