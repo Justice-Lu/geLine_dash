@@ -1,0 +1,6 @@
+  dash==2.7.1
+  dash-core-components==2.0.0
+  Flask==2.0.1
+  Jinja2==3.0.3
+  pandas==1.5.1
+
