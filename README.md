@@ -1,7 +1,8 @@
 
 # geLine
 
-Welcome to [geLine](https://github.com/Justice-Lu/geLine_dash). geLine is an interactive tool for visualizing gene expression trajectories across the neuronal lineage of olfactory sensory neurons (OSNs).
+Welcome to [geLine](https://github.com/Justice-Lu/geLine_dash). geLine is an interactive tool for visualizing gene expression trajectories across the neuronal lineage of olfactory sensory neurons (OSNs). The app is also hosted at [geLine on render](https://geline-dash.onrender.com/) for immediate usage. However, for faster response and usage, please follow the local usage instructions below.
+
 
 ## About geLine
 
