@@ -277,7 +277,9 @@ def expression_plot(subject_gene, query_genes, n_top_genes, n_bot_genes, enriche
                     trace = go.Scatter(x=query_data_q['index'], y=query_data_q['expression'],
                                     mode='lines', line_shape='spline',
                                     name=_gene,
-                                    line=dict(color=d_colors[_gene], width=5),
+                                    line=dict(color=d_colors[_gene], 
+                                              width=5, 
+                                              dash='dash'),
                                     hoverinfo='text',
                                     hovertext=f"{_gene}")
                     traces.append(trace)
@@ -289,7 +291,7 @@ def expression_plot(subject_gene, query_genes, n_top_genes, n_bot_genes, enriche
         sub_trace = go.Scatter(x=subject_data['index'], y=subject_data['expression'],
                             mode='lines', line_shape='spline',
                             name=subject_gene,
-                            line=dict(color='#F4D1FF', width=7),
+                            line=dict(color='#000000', width=7),
                             hoverinfo='text',
                             hovertext=subject_gene)
         traces.append(sub_trace)
